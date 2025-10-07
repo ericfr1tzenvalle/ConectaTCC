@@ -1,15 +1,18 @@
 package com.ifrs.conectatcc.service;
 
 import com.ifrs.conectatcc.model.Usuario;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Service // Indica que essa classe é um "serviço" do Spring (componente de lógica de negócio)
 public class TokenService {
@@ -31,6 +34,10 @@ public class TokenService {
         // 86400000 milissegundos = 24 horas
         Date dataExpiracao = new Date(agora.getTime() + 86400000);
 
+        String roles = usuario.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
         // Cria a chave secreta que será usada pra "assinar" o token.
         // Essa chave garante que só o servidor consegue validar se o token é verdadeiro.
         SecretKey chave = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
@@ -43,6 +50,9 @@ public class TokenService {
                 // Define o "subject", ou seja, o dono do token — aqui é o e-mail do usuário.
                 // Isso é o que identifica de quem é esse token.
                 .setSubject(usuario.getEmail())
+
+                //Fix: definir a role
+                .claim("roles", roles)
 
                 // Data de criação do token
                 .setIssuedAt(agora)
@@ -58,18 +68,16 @@ public class TokenService {
                 .compact();
     }
 
-    public String validateToken(String token) {
+    public Claims getClaims(String token) {
         try {
             SecretKey chave = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
             return Jwts.parserBuilder()
                     .setSigningKey(chave)
                     .build()
                     .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
+                    .getBody();
         } catch (Exception e) {
-            // Se o token for inválido (expirado, assinatura incorreta), retorna uma string vazia
-            return "";
+            return null;
         }
-    } //TODO: Provavelmente o erro ta aqui
+    }
 }

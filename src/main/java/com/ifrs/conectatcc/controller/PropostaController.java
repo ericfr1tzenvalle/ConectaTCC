@@ -1,5 +1,6 @@
 package com.ifrs.conectatcc.controller;
 
+import com.ifrs.conectatcc.dto.CriarPropostaDTO;
 import com.ifrs.conectatcc.dto.PropostaDTO;
 import com.ifrs.conectatcc.dto.PropostaDetalheDTO;
 import com.ifrs.conectatcc.model.Professor;
@@ -23,11 +24,8 @@ public class PropostaController {
     //TODO: criar filtros para propostas posteriormente no Service
 
     @PostMapping("/criar")
-    public ResponseEntity<PropostaDTO> criar(@RequestBody PropostaDTO propostaDTO){
-        PropostaTCC proposta = new PropostaTCC();
-        proposta.setTitulo(propostaDTO.titulo());
-        proposta.setDescricao(propostaDTO.descricao());
-        PropostaDTO propostaCriada = propostaService.criarProposta(proposta);
+    public ResponseEntity<PropostaDTO> criar(@RequestBody CriarPropostaDTO propostaDTO){
+        PropostaDTO propostaCriada = propostaService.criarProposta(propostaDTO);
         return ResponseEntity.ok(propostaCriada);
 
     }

@@ -44,10 +44,6 @@ public class Professor extends Usuario{
     @OneToMany(mappedBy = "professorAutor")
     private List<PropostaTCC> propostas = new ArrayList<>();
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("PROFESSOR"));
-    }
 
     
     

@@ -80,9 +80,7 @@ public abstract class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Apenas o nome do Enum (ex: "PROFESSOR").
-        // O Spring Security adiciona o "ROLE_" sozinho quando usamos o método .hasRole().
-        return List.of(new SimpleGrantedAuthority(this.tipo.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.tipo.name())); // Voltei com essa config
     }
 
     @Override

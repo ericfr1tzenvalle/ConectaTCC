@@ -1,12 +1,11 @@
 package com.ifrs.conectatcc.service;
 
 import com.ifrs.conectatcc.dto.CandidaturaDTO;
+import com.ifrs.conectatcc.dto.CriarPropostaDTO;
 import com.ifrs.conectatcc.dto.PropostaDTO;
 import com.ifrs.conectatcc.dto.PropostaDetalheDTO;
-import com.ifrs.conectatcc.model.Candidatura;
-import com.ifrs.conectatcc.model.Professor;
-import com.ifrs.conectatcc.model.PropostaTCC;
-import com.ifrs.conectatcc.model.StatusTCC;
+import com.ifrs.conectatcc.model.*;
+import com.ifrs.conectatcc.repository.ProfessorRepository;
 import com.ifrs.conectatcc.repository.PropostaRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -20,9 +19,11 @@ import java.util.List;
 @Service
 public class PropostaService {
     private final PropostaRepository propostaRepository;
+    private final ProfessorRepository professorRepository;
     //Todos autowired foram retirados por não serem uma boa prática.
-    public PropostaService(PropostaRepository propostaRepository) {
+    public PropostaService(PropostaRepository propostaRepository , ProfessorRepository professorRepository) {
         this.propostaRepository = propostaRepository;
+        this.professorRepository = professorRepository;
     }
 
     @Transactional
@@ -32,7 +33,10 @@ public class PropostaService {
     }
     @Transactional
     public List<PropostaDTO> listarPropostasDoProfessorLogado() {
-        Professor professorLogado = (Professor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
         return professorLogado.getPropostas()
                 .stream()
                 .map(p -> new PropostaDTO(p.getId(), p.getTitulo(), p.getDescricao(), p.getStatus(), professorLogado.getNome()))
@@ -40,9 +44,16 @@ public class PropostaService {
     }
 
     @Transactional
-    public PropostaDTO criarProposta(@Valid PropostaTCC proposta){
-        Professor professorLogado = (Professor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        proposta.setProfessorAutor(professorLogado);
+    public PropostaDTO criarProposta(CriarPropostaDTO criarPropostaDTO){
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Professor professorAutor = professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado no banco de dados."));
+
+        PropostaTCC proposta = new PropostaTCC();
+        proposta.setTitulo(criarPropostaDTO.titulo());
+        proposta.setDescricao(criarPropostaDTO.descricao());
+        proposta.setProfessorAutor(professorAutor);
         proposta.setStatus(StatusTCC.DISPONIVEL);
         PropostaTCC salva = propostaRepository.save(proposta);
         return new PropostaDTO(
@@ -57,7 +68,10 @@ public class PropostaService {
 
     @Transactional
     public PropostaDTO atualizarProposta(Long id, @Valid PropostaTCC propostaAtualizada){
-        Professor professorLogado = (Professor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
         PropostaTCC propostaExistente = propostaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
 
@@ -83,7 +97,10 @@ public class PropostaService {
 
     @Transactional
     public void deletarProposta(Long id){
-        Professor professorLogado = (Professor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
         PropostaTCC propostaExistente = propostaRepository.findById(id).orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
         if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
             throw new RuntimeException("Você não tem permissão para deletar essa proposta");

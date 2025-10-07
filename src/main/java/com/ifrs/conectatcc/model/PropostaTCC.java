@@ -46,8 +46,7 @@ public class PropostaTCC {
     @Column(name="descricao", nullable = false)
     private String descricao;
 
-    @NotNull
-    @Column(name="status",nullable = false)
+    @Column(name="status")
     @Enumerated(EnumType.STRING)
     private StatusTCC status = StatusTCC.DISPONIVEL;
 

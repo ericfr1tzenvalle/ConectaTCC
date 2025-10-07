@@ -2,17 +2,22 @@ package com.ifrs.conectatcc.config;
 
 import com.ifrs.conectatcc.repository.UsuarioRepository;
 import com.ifrs.conectatcc.service.TokenService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -25,31 +30,29 @@ public class SecurityFilter extends OncePerRequestFilter {
         this.usuarioRepository = usuarioRepository;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var token = this.recoverToken(request);
-
         if (token != null) {
-            var email = tokenService.validateToken(token);
-            // Evita buscar no banco se o token for inválido
-            if (email != null && !email.isEmpty()) {
-                UserDetails user = usuarioRepository.findByEmail(email).orElse(null);
-
-                if (user != null) {
-                    var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+            Claims claims = tokenService.getClaims(token);
+            if (claims != null) {
+                String email = claims.getSubject();
+                UserDetails user = usuarioRepository.findByEmail(email)
+                        .orElseThrow();
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
-
-        // Continua a cadeia de filtros, independentemente de ter autenticado ou não.
-        // Se a rota for pública, o Spring permitirá. Se for privada e não houver autenticação, o Spring bloqueará.
         filterChain.doFilter(request, response);
     }
 
+
     private String recoverToken(HttpServletRequest request) {
-        var authHeader = request.getHeader("Authorization");
-        if (authHeader == null) return null;
-        return authHeader.replace("Bearer ", "");
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.toLowerCase().startsWith("bearer ")) {
+            return null;
+        }
+        return authHeader.substring(7).trim();
     }
 }
