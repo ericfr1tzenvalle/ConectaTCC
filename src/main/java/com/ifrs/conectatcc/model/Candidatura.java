@@ -16,6 +16,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,17 +33,26 @@ public class Candidatura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name="data", nullable = false)
+
+    @NotNull
+    @Column(nullable = false)
     private LocalDate dataCandidatura;
-    @Column(name="status",nullable = false)
+
+    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusCandidatura status;
-    @Column(name="mensagem")
+
+
     private String mensagem;
-    @ManyToOne
-    @JoinColumn(name="aluno_id")
-    private Aluno candidato;
-    @ManyToOne
+
+    @NotNull
+    @ManyToOne(optional = false)
+    @JoinColumn(name="aluno_candidato_id")
+    private Aluno alunoCandidato;
+
+    @NotNull
+    @ManyToOne(optional = false)
     @JoinColumn(name="proposta_tcc_id")
     private PropostaTCC proposta;
     

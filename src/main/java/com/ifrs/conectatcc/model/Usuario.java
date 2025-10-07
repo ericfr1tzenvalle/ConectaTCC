@@ -18,10 +18,11 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,24 +39,42 @@ import org.springframework.security.core.userdetails.UserDetails;
 //serao duas tabelas diferentes no banco mais ligadas por um FK
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Usuario implements UserDetails{
+@EqualsAndHashCode
+public abstract class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "nome", nullable = false, length = 100, unique = false)
+
+    @NotBlank
+    @Column(nullable = false, length = 100)
     private String nome;
-    @Column(name = "email", unique = true, nullable = false)
+
+    @NotBlank
+    @Email
+    @Column(unique = true, nullable = false)
     private String email;
-    @Column(name = "senha", unique = false, nullable = false, length = 100)
+
+    @NotBlank
+    @Column(nullable = false, length = 100)
     private String senha;
-    @Column(name="matricula", nullable = false)
+
+    @NotBlank
+    @Column(nullable = false, unique = true)
     private String matricula;
+
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
+    @Column(nullable = false)
     private TipoUsuario tipo;
-    @Column(name = "ativo")
-    private boolean ativo;
-      @Override
+
+
+    @Column(unique = true)
+    private String lattes;
+
+    @Column(nullable = false)
+    private boolean ativo = true;
+
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Cria uma "Role" com base no tipo do usuário
         // Exemplo: TipoUsuario.ALUNO -> ROLE_ALUNO
@@ -89,7 +108,8 @@ public abstract class Usuario implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return this.ativo; // só loga se estiver ativo
+        return this.ativo; // usa o campo ativo para habilitar/desabilitar
+
     }
-    
 }
+ 

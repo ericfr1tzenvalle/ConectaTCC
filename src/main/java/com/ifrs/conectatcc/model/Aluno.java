@@ -10,7 +10,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,12 +29,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter@Setter
 @Entity
-@Table(name = "aluno")
 public class Aluno extends Usuario{
-    @Column(name="curso", nullable = false)
+    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TipoCurso curso;
-    @OneToMany(mappedBy = "candidato")
-    private List<Candidatura> candidaturas;
+
+    @OneToMany(mappedBy = "alunoCandidato")
+    private List<Candidatura> candidaturas  = new ArrayList<>();
 
 }
