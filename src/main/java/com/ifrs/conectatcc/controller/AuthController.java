@@ -4,13 +4,16 @@
  */
 package com.ifrs.conectatcc.controller;
 
+import com.ifrs.conectatcc.dto.AlunoRegistroDTO;
 import com.ifrs.conectatcc.dto.LoginDTO;
+import com.ifrs.conectatcc.dto.ProfessorRegistroDTO;
 import com.ifrs.conectatcc.dto.TokenDTO;
 import com.ifrs.conectatcc.model.Aluno;
 import com.ifrs.conectatcc.model.Professor;
 import com.ifrs.conectatcc.model.Usuario;
 import com.ifrs.conectatcc.service.TokenService;
 import com.ifrs.conectatcc.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,25 +39,31 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    //TODO: Implementar validações e tratamento de erros
+
     @PostMapping("/register/aluno")
-    public ResponseEntity<Aluno> registrarAluno(@RequestBody Aluno aluno) {
-        Aluno novoAluno = userService.cadastrarAluno(aluno);
+    public ResponseEntity<Aluno> registrarAluno(@Valid @RequestBody AlunoRegistroDTO alunoRegistroDTO) {
+        Aluno novoAluno = userService.cadastrarAluno(alunoRegistroDTO);
         return ResponseEntity.ok(novoAluno);
     }
 
     @PostMapping("/register/professor")
-    public ResponseEntity<Professor> registrarProfessor(@RequestBody Professor professor) {
-        Professor novoProfessor = userService.cadastrarProfessor(professor);
+    public ResponseEntity<Professor> registrarProfessor(@Valid @RequestBody ProfessorRegistroDTO professorRegistroDTO) {
+        Professor novoProfessor = userService.cadastrarProfessor(professorRegistroDTO);
         return ResponseEntity.ok(novoProfessor);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDTO> login(@RequestBody LoginDTO loginDTO) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.senha());
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        String token = tokenService.gerarToken(usuarioLogado);
-        return ResponseEntity.ok(new TokenDTO(token));
+    public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
+        try {
+            var authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.senha());
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+            String token = tokenService.gerarToken(usuarioLogado);
+            return ResponseEntity.ok(new TokenDTO(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(new TokenDTO("Credenciais inválidas"));
+        }
     }
 
 }
