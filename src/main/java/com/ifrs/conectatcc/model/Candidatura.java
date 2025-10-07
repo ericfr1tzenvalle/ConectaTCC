@@ -16,11 +16,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 /**
  *
@@ -34,9 +36,10 @@ public class Candidatura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @CreationTimestamp
     @NotNull
     @Column(nullable = false)
-    private LocalDate dataCandidatura;
+    private LocalDateTime dataCandidatura;
 
     @NotNull
     @Column(nullable = false)

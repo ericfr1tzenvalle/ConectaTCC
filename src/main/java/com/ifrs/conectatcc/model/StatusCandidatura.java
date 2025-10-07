@@ -11,6 +11,6 @@ package com.ifrs.conectatcc.model;
 public enum StatusCandidatura {
     EM_ANALISE,
     APROVADA,
-    RECUSA  
+    RECUSADA
     
 }
