@@ -57,4 +57,19 @@ public class TokenService {
                 // Gera a string final (token JWT em formato compacto)
                 .compact();
     }
+
+    public String validateToken(String token) {
+        try {
+            SecretKey chave = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            return Jwts.parserBuilder()
+                    .setSigningKey(chave)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (Exception e) {
+            // Se o token for inválido (expirado, assinatura incorreta), retorna uma string vazia
+            return "";
+        }
+    } //TODO: Provavelmente o erro ta aqui
 }
