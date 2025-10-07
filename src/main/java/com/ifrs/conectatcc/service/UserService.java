@@ -5,14 +5,18 @@
 package com.ifrs.conectatcc.service;
 
 import com.ifrs.conectatcc.dto.AlunoRegistroDTO;
+import com.ifrs.conectatcc.dto.AtualizarPerfilDTO;
+import com.ifrs.conectatcc.dto.PerfilDTO;
 import com.ifrs.conectatcc.dto.ProfessorRegistroDTO;
 import com.ifrs.conectatcc.model.Aluno;
 import com.ifrs.conectatcc.model.Professor;
 import com.ifrs.conectatcc.model.TipoUsuario;
+import com.ifrs.conectatcc.model.Usuario;
 import com.ifrs.conectatcc.repository.AlunoRepository;
 import com.ifrs.conectatcc.repository.ProfessorRepository;
 import com.ifrs.conectatcc.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,16 +30,51 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 @Service
 public class UserService implements UserDetailsService {
-    
-    @Autowired
-    private ProfessorRepository professorRepository;
-    @Autowired
-    private AlunoRepository alunoRepository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
+
+    private final ProfessorRepository professorRepository;
+    private final AlunoRepository alunoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(ProfessorRepository professorRepository,
+                       AlunoRepository alunoRepository,
+                       UsuarioRepository usuarioRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.professorRepository = professorRepository;
+        this.alunoRepository = alunoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public PerfilDTO verPerfil(){
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new PerfilDTO(
+                usuarioLogado.getId(),
+                usuarioLogado.getNome(),
+                usuarioLogado.getEmail(),
+                usuarioLogado.getMatricula(),
+                usuarioLogado.getLattes()
+        );
+    }
+
+    public PerfilDTO atualizarPerfil(AtualizarPerfilDTO atualizarPerfilDTO){
+        String emailUsuario = SecurityContextHolder.getContext().getAuthentication().getName(); //Pega o username pois o email é unico
+        Usuario usuarioLogado = usuarioRepository.findByEmail(emailUsuario).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuarioLogado.setNome(atualizarPerfilDTO.nome());
+        usuarioLogado.setLattes(atualizarPerfilDTO.lattes());
+        usuarioRepository.save(usuarioLogado);
+
+        return new PerfilDTO(
+                usuarioLogado.getId(),
+                usuarioLogado.getNome(),
+                usuarioLogado.getEmail(),
+                usuarioLogado.getMatricula(),
+                usuarioLogado.getLattes()
+        );
+
+    }
 
     public Aluno cadastrarAluno(AlunoRegistroDTO dto){
         Aluno aluno = new Aluno();
@@ -64,9 +103,4 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + email));
     }
-
 }
-    
-
-    
- 

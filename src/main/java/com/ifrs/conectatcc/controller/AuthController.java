@@ -32,12 +32,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
+
+    private final UserService userService;
+
+    private final TokenService tokenService;
+
+    private final AuthenticationManager authenticationManager;
+
+    public AuthController(UserService userService, TokenService tokenService, AuthenticationManager authenticationManager){
+        this.userService = userService;
+        this.tokenService = tokenService;
+        this.authenticationManager = authenticationManager;
+    }
 
     //TODO: Implementar validações e tratamento de erros
 
