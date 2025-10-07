@@ -29,7 +29,8 @@ import lombok.Setter;
  *
  * @author Éric
  */
-@Getter@Setter
+@Getter
+@Setter
 @Entity
 @Table(name="proposta")
 public class PropostaTCC {

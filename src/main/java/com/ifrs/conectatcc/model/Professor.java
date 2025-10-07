@@ -10,6 +10,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  *
@@ -29,7 +32,7 @@ import lombok.Setter;
 @Table(name="professor")
 public class Professor extends Usuario{
 
-    @NotBlank
+    @NotBlank(message = "O departamento não pode ser vazio.")
     @Column(name="departamento", nullable = false)
     private String departamento;
 
@@ -40,6 +43,11 @@ public class Professor extends Usuario{
 
     @OneToMany(mappedBy = "professorAutor")
     private List<PropostaTCC> propostas = new ArrayList<>();
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("PROFESSOR"));
+    }
 
     
     

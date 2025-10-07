@@ -22,6 +22,8 @@ import java.util.List;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +34,8 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @author Éric
  */
 
-@Getter@Setter
+@Getter
+@Setter
 @Entity // mapeamento como entidade
 @Table(name = "usuarios") // define a tabela com nome usuarios
 @Inheritance(strategy = InheritanceType.JOINED) // defino que o aluno e professor
@@ -45,21 +48,22 @@ public abstract class Usuario implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "O nome não pode ser vazio.")
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
-    @NotBlank
-    @Email
-    @Column(unique = true, nullable = false)
+    @NotBlank(message = "O email não pode ser vazio.")
+    @Email(message = "Formato de email inválido.")
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @NotBlank
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "A senha não pode ser vazia.")
+    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
+    @Column(name = "senha", nullable = false, length = 100)
     private String senha;
 
-    @NotBlank
-    @Column(nullable = false, unique = true)
+    @NotBlank(message = "A matrícula não pode ser vazia.")
+    @Column(name="matricula", nullable = false, unique = true)
     private String matricula;
 
     @NotNull
@@ -76,9 +80,9 @@ public abstract class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Cria uma "Role" com base no tipo do usuário
-        // Exemplo: TipoUsuario.ALUNO -> ROLE_ALUNO
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.tipo.name()));
+        // Apenas o nome do Enum (ex: "PROFESSOR").
+        // O Spring Security adiciona o "ROLE_" sozinho quando usamos o método .hasRole().
+        return List.of(new SimpleGrantedAuthority(this.tipo.name()));
     }
 
     @Override
@@ -111,5 +115,6 @@ public abstract class Usuario implements UserDetails {
         return this.ativo; // usa o campo ativo para habilitar/desabilitar
 
     }
+
 }
  
