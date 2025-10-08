@@ -4,10 +4,7 @@
  */
 package com.ifrs.conectatcc.controller;
 
-import com.ifrs.conectatcc.dto.AlunoRegistroDTO;
-import com.ifrs.conectatcc.dto.LoginDTO;
-import com.ifrs.conectatcc.dto.ProfessorRegistroDTO;
-import com.ifrs.conectatcc.dto.TokenDTO;
+import com.ifrs.conectatcc.dto.*;
 import com.ifrs.conectatcc.model.Aluno;
 import com.ifrs.conectatcc.model.Professor;
 import com.ifrs.conectatcc.model.Usuario;
@@ -48,14 +45,14 @@ public class AuthController {
     //TODO: Implementar validações e tratamento de erros
 
     @PostMapping("/register/aluno")
-    public ResponseEntity<Aluno> registrarAluno(@Valid @RequestBody AlunoRegistroDTO alunoRegistroDTO) {
-        Aluno novoAluno = userService.cadastrarAluno(alunoRegistroDTO);
+    public ResponseEntity<PerfilDTO> registrarAluno(@Valid @RequestBody AlunoRegistroDTO alunoRegistroDTO) {
+        PerfilDTO novoAluno = userService.cadastrarAluno(alunoRegistroDTO);
         return ResponseEntity.ok(novoAluno);
     }
 
     @PostMapping("/register/professor")
-    public ResponseEntity<Professor> registrarProfessor(@Valid @RequestBody ProfessorRegistroDTO professorRegistroDTO) {
-        Professor novoProfessor = userService.cadastrarProfessor(professorRegistroDTO);
+    public ResponseEntity<PerfilDTO> registrarProfessor(@Valid @RequestBody ProfessorRegistroDTO professorRegistroDTO) {
+        PerfilDTO novoProfessor = userService.cadastrarProfessor(professorRegistroDTO);
         return ResponseEntity.ok(novoProfessor);
     }
 

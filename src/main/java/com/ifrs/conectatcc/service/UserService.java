@@ -17,6 +17,7 @@ import com.ifrs.conectatcc.repository.ProfessorRepository;
 import com.ifrs.conectatcc.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -75,8 +76,8 @@ public class UserService implements UserDetailsService {
         );
 
     }
-
-    public Aluno cadastrarAluno(AlunoRegistroDTO dto){
+    //Talvez criar metodo para atualizar no Usuario assim evita esa repeticao de set
+    public PerfilDTO cadastrarAluno(AlunoRegistroDTO dto){
         Aluno aluno = new Aluno();
         aluno.setNome(dto.nome());
         aluno.setEmail(dto.email());
@@ -84,10 +85,11 @@ public class UserService implements UserDetailsService {
         aluno.setMatricula(dto.matricula());
         aluno.setCurso(dto.curso());
         aluno.setTipo(TipoUsuario.ALUNO);
-        //aluno.setAtivo(true);
-        return alunoRepository.save(aluno);
+        aluno.setAtivo(true);
+        alunoRepository.save(aluno);
+        return new PerfilDTO(aluno.getId(),aluno.getNome(),aluno.getEmail(), aluno.getMatricula(), aluno.getLattes());
     }
-    public Professor cadastrarProfessor(ProfessorRegistroDTO dto){
+    public PerfilDTO cadastrarProfessor(ProfessorRegistroDTO dto){
         Professor professor = new Professor();
         professor.setNome(dto.nome());
         professor.setEmail(dto.email());
@@ -97,10 +99,13 @@ public class UserService implements UserDetailsService {
         professor.setLattes(dto.lattes());
         professor.setTipo(TipoUsuario.PROFESSOR);
         professor.setAtivo(true);
-        return professorRepository.save(professor);
+        professorRepository.save(professor);
+        return new PerfilDTO(professor.getId(), professor.getNome(),professor.getEmail(), professor.getMatricula(), professor.getLattes());
     }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + email));
     }
+
 }
