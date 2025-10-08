@@ -11,5 +11,6 @@ package com.ifrs.conectatcc.model;
 public enum StatusTCC {
     DISPONIVEL,
     EM_ANDAMENTO,
-    EM_ANALISE
+    EM_ANALISE,
+    APROVADO
 }

@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.DELETE, "/propostas/deletar/**")).hasRole("PROFESSOR")
                         .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.GET, "/propostas/minhas/**")).hasRole("PROFESSOR")
                         .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.POST, "/professor/candidaturas/{id}/aceitar")).hasRole("PROFESSOR")
+                        .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.PUT, "/{id}/concluir")).hasRole("PROFESSOR")
                         .requestMatchers(mvcMatcherBuilder.pattern("/professor/**")).hasRole("PROFESSOR")
 
                         // Regras do Aluno

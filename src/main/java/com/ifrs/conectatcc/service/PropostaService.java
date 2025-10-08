@@ -31,6 +31,7 @@ public class PropostaService {
         List<PropostaTCC> todasPropostas = propostaRepository.findAll();
         return todasPropostas.stream().map(p-> new PropostaDTO(p.getId(),p.getTitulo(),p.getDescricao(),p.getStatus(),p.getProfessorAutor().getNome())).toList();
     }
+
     @Transactional
     public List<PropostaDTO> listarPropostasDoProfessorLogado() {
         Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -142,6 +143,26 @@ public class PropostaService {
         );
     }
 
+    @Transactional
+    public PropostaDTO concluirProposta(Long id){
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
+        PropostaTCC propostaExistente = propostaRepository.findById(id).orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
+        if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
+            throw new RuntimeException("Você não tem permissão para editar essa proposta");
+        }
+        if(propostaExistente.getStatus() != StatusTCC.EM_ANDAMENTO){
+            throw new RuntimeException("Só é possível concluir propostas com status 'Em andamento'.");
+        }
 
+        propostaExistente.setStatus(StatusTCC.APROVADO);
+
+        PropostaDTO propostaConcluida = new PropostaDTO(propostaExistente.getId(), propostaExistente.getTitulo(), propostaExistente.getDescricao(), propostaExistente.getStatus(), professorLogado.getNome());
+
+        propostaRepository.save(propostaExistente);
+
+        return propostaConcluida;
+    }
 }

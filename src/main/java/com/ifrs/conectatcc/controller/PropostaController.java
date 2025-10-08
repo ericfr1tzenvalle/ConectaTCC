@@ -57,7 +57,12 @@ public class PropostaController {
     public ResponseEntity<PropostaDTO> deletarProposta(@PathVariable Long id) {
         propostaService.deletarProposta(id);
         return ResponseEntity.noContent().build();
+    }
 
+    @PutMapping("/{id}/concluir")
+    public ResponseEntity<PropostaDTO> concluirProposta(@PathVariable Long id){
+        PropostaDTO propostaConcluida = propostaService.concluirProposta(id);
+        return ResponseEntity.ok(propostaConcluida);
     }
 
 }
