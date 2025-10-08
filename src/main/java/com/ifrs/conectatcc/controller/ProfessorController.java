@@ -16,17 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/professor")
 public class ProfessorController {
-    private final CandidaturaService candidaturaService;
     private final UserService userService;
 
-    public ProfessorController(CandidaturaService candidaturaService, UserService userService) {
-        this.candidaturaService = candidaturaService;
+    public ProfessorController(UserService userService) {
         this.userService = userService;
-    }
-    @PostMapping("/candidaturas/{id}/aceitar")
-    public ResponseEntity<Void> aceitarCandidatura(@PathVariable Long id){
-        candidaturaService.aceitarCandidatura(id);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/perfil")

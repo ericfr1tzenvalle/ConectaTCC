@@ -35,6 +35,13 @@ public class CandidaturaController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/candidaturas/{id}")
+    public ResponseEntity<Void> aceitarCandidatura(@PathVariable Long id){
+        candidaturaService.aceitarCandidatura(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 
 }
