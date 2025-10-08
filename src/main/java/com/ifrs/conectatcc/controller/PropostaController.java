@@ -59,7 +59,7 @@ public class PropostaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/concluir")
+    @PutMapping("/concluir/{id}r")
     public ResponseEntity<PropostaDTO> concluirProposta(@PathVariable Long id){
         PropostaDTO propostaConcluida = propostaService.concluirProposta(id);
         return ResponseEntity.ok(propostaConcluida);
