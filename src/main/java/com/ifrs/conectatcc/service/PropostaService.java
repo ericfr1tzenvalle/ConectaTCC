@@ -26,18 +26,16 @@ public class PropostaService {
         this.professorRepository = professorRepository;
     }
 
-    @Transactional
+    //Remoçoes de transactional se não  insert, update ou delete não coloca.
     public List<PropostaDTO> listarTodasPropostas(){
         List<PropostaTCC> todasPropostas = propostaRepository.findAll();
         return todasPropostas.stream().map(p-> new PropostaDTO(p.getId(),p.getTitulo(),p.getDescricao(),p.getStatus(),p.getProfessorAutor().getNome())).toList();
     }
 
-    @Transactional
-    public List<PropostaDTO> listarPropostasDoProfessorLogado() {
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
+    public List<PropostaDTO> listarPropostasDoProfessorLogado() {
+        Professor professorLogado = getProfessorLogado();
+
         return professorLogado.getPropostas()
                 .stream()
                 .map(p -> new PropostaDTO(p.getId(), p.getTitulo(), p.getDescricao(), p.getStatus(), professorLogado.getNome()))
@@ -46,15 +44,12 @@ public class PropostaService {
 
     @Transactional
     public PropostaDTO criarProposta(CriarPropostaDTO criarPropostaDTO){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Professor professorAutor = professorRepository.findById(usuarioLogado.getId())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado no banco de dados."));
+        Professor professorLogado = getProfessorLogado();
 
         PropostaTCC proposta = new PropostaTCC();
         proposta.setTitulo(criarPropostaDTO.titulo());
         proposta.setDescricao(criarPropostaDTO.descricao());
-        proposta.setProfessorAutor(professorAutor);
+        proposta.setProfessorAutor(professorLogado);
         proposta.setStatus(StatusTCC.DISPONIVEL);
         PropostaTCC salva = propostaRepository.save(proposta);
         return new PropostaDTO(
@@ -69,16 +64,9 @@ public class PropostaService {
 
     @Transactional
     public PropostaDTO atualizarProposta(Long id, @Valid PropostaTCC propostaAtualizada){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Professor professorLogado = getProfessorLogado();
+        PropostaTCC propostaExistente = getProposta(id, professorLogado);
 
-        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
-        PropostaTCC propostaExistente = propostaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
-
-        if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
-            throw new RuntimeException("Você não tem permissão para editar essa proposta");
-        }
         if (propostaExistente.getStatus() != StatusTCC.DISPONIVEL) {
             throw new RuntimeException("Só é possível editar propostas com status 'Disponível'.");
         }
@@ -98,14 +86,9 @@ public class PropostaService {
 
     @Transactional
     public void deletarProposta(Long id){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Professor professorLogado = getProfessorLogado();
+        PropostaTCC propostaExistente = getProposta(id,professorLogado);
 
-        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
-        PropostaTCC propostaExistente = propostaRepository.findById(id).orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
-        if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
-            throw new RuntimeException("Você não tem permissão para deletar essa proposta");
-        }
         if(propostaExistente.getStatus() != StatusTCC.DISPONIVEL){
             throw new RuntimeException("Só é possível deletar propostas com status 'Disponível'.");
         }
@@ -113,7 +96,6 @@ public class PropostaService {
 
     }
 
-    @Transactional
     public PropostaDetalheDTO buscarPorId(Long id){
         PropostaTCC proposta = propostaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
@@ -145,14 +127,9 @@ public class PropostaService {
 
     @Transactional
     public PropostaDTO concluirProposta(Long id){
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Professor professorLogado = getProfessorLogado();
+        PropostaTCC propostaExistente = getProposta(id, professorLogado);
 
-        Professor professorLogado = professorRepository.findById(usuarioLogado.getId())
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
-        PropostaTCC propostaExistente = propostaRepository.findById(id).orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
-        if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
-            throw new RuntimeException("Você não tem permissão para editar essa proposta");
-        }
         if(propostaExistente.getStatus() != StatusTCC.EM_ANDAMENTO){
             throw new RuntimeException("Só é possível concluir propostas com status 'Em andamento'.");
         }
@@ -164,5 +141,19 @@ public class PropostaService {
         propostaRepository.save(propostaExistente);
 
         return propostaConcluida;
+    }
+
+    public Professor getProfessorLogado(){
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return professorRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
+    }
+
+    public PropostaTCC getProposta(Long id, Professor professorLogado){
+        PropostaTCC propostaExistente = propostaRepository.findById(id).orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
+        if(!propostaExistente.getProfessorAutor().equals(professorLogado)){
+            throw new RuntimeException("Você não tem permissão para editar o estado dessa proposta");
+        }
+        return propostaExistente;
     }
 }
