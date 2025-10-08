@@ -30,7 +30,7 @@ public class PropostaController {
 
     }
 
-    @GetMapping("minhas/{id}")
+    @GetMapping("/minhas/{id}")
     public ResponseEntity<PropostaDetalheDTO> buscarPorId(@PathVariable Long id){
         PropostaDetalheDTO proposta = propostaService.buscarPorId(id);
         return ResponseEntity.ok(proposta);
@@ -59,7 +59,7 @@ public class PropostaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/concluir/{id}r")
+    @PutMapping("/concluir/{id}")
     public ResponseEntity<PropostaDTO> concluirProposta(@PathVariable Long id){
         PropostaDTO propostaConcluida = propostaService.concluirProposta(id);
         return ResponseEntity.ok(propostaConcluida);
